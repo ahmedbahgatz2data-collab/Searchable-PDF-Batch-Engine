@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Searchable PDF Ultra Batch Engine v5.2 - Fixed Download</title>
+  <title>Searchable PDF Multi-Thread Parallel Engine v7.0</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -39,15 +39,15 @@
   <header class="bg-gray-900 border-b border-gray-800 px-6 py-4 sticky top-0 z-50 shadow-md">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <div class="p-2.5 bg-blue-600/20 text-blue-400 rounded-xl border border-blue-500/30">
-          <i class="fa-solid fa-bolt text-xl"></i>
+        <div class="p-2.5 bg-purple-600/20 text-purple-400 rounded-xl border border-purple-500/30">
+          <i class="fa-solid fa-microchip text-xl"></i>
         </div>
         <div>
           <h1 class="text-xl font-bold tracking-wide text-white flex items-center gap-2">
-            Searchable PDF Ultra Engine
-            <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">v5.2 Direct Download Fix</span>
+            Searchable PDF Parallel Engine
+            <span class="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/30">v7.0 Parallel Core</span>
           </h1>
-          <p class="text-xs text-gray-400">Worker Rotation • Instant Blob Save • 100% Working Auto-Download</p>
+          <p class="text-xs text-gray-400">Multi-Core Parallel OCR • Pause / Stop / Retry Controls • Instant Auto-Save</p>
         </div>
       </div>
 
@@ -60,6 +60,17 @@
             <option value="eng" class="bg-gray-900">English</option>
             <option value="ara" class="bg-gray-900">Arabic</option>
             <option value="ara+eng" class="bg-gray-900">Arabic + English</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2 bg-gray-800/80 px-3 py-1.5 rounded-lg border border-gray-700">
+          <i class="fa-solid fa-sliders text-gray-400"></i>
+          <span class="text-xs text-gray-400">Threads:</span>
+          <select id="threadCountSelect" class="bg-transparent text-white text-xs font-medium focus:outline-none cursor-pointer">
+            <option value="auto" selected class="bg-gray-900">Auto (All CPU Cores)</option>
+            <option value="2" class="bg-gray-900">2 Cores</option>
+            <option value="4" class="bg-gray-900">4 Cores</option>
+            <option value="8" class="bg-gray-900">8 Cores</option>
           </select>
         </div>
 
@@ -87,21 +98,21 @@
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
 
     <!-- Tech Banner -->
-    <div class="bg-emerald-950/30 border border-emerald-800/40 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-emerald-200">
+    <div class="bg-purple-950/30 border border-purple-800/40 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-purple-200">
       <div class="flex items-center gap-3">
-        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
-        <span><strong>Direct Blob Export Fixed:</strong> Files are now linked instantly to secure memory blobs upon completion. Auto-download and manual "Save" buttons will now trigger file downloads immediately!</span>
+        <i class="fa-solid fa-bolt text-purple-400 text-lg"></i>
+        <span><strong>Full Control Active:</strong> Pause, Resume, Stop execution, or Retry failed items anytime during high-speed parallel conversion.</span>
       </div>
     </div>
 
     <!-- Drop Zone -->
-    <div id="dropZone" class="border-2 border-dashed border-gray-700 hover:border-blue-500 bg-gray-900/50 hover:bg-gray-900 rounded-2xl p-8 text-center transition-all cursor-pointer relative group flex flex-col items-center justify-center min-h-[160px]">
+    <div id="dropZone" class="border-2 border-dashed border-gray-700 hover:border-purple-500 bg-gray-900/50 hover:bg-gray-900 rounded-2xl p-8 text-center transition-all cursor-pointer relative group flex flex-col items-center justify-center min-h-[160px]">
       <input type="file" id="fileInput" multiple accept="application/pdf,image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
-      <div class="p-4 bg-gray-800 group-hover:bg-blue-600/20 text-gray-400 group-hover:text-blue-400 rounded-full mb-3 transition-all">
+      <div class="p-4 bg-gray-800 group-hover:bg-purple-600/20 text-gray-400 group-hover:text-purple-400 rounded-full mb-3 transition-all">
         <i class="fa-solid fa-file-arrow-up text-3xl"></i>
       </div>
-      <h3 class="text-base font-semibold text-white mb-1">Drop Files (PDFs / Images) Here</h3>
-      <p class="text-xs text-gray-400">Direct Blob Stream & Instant Save Enabled</p>
+      <h3 class="text-base font-semibold text-white mb-1">Drop Files (PDFs / Images) Here for Parallel OCR</h3>
+      <p class="text-xs text-gray-400">Concurrent Thread Scheduling Enabled</p>
     </div>
 
     <!-- Batch Stats Bar -->
@@ -119,19 +130,32 @@
         <div class="text-xl font-bold text-emerald-400" id="statPagesPerSec">0.0 <span class="text-xs font-normal">p/s</span></div>
       </div>
       <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
-        <div class="text-xs text-gray-400 mb-1">Worker Rotations</div>
-        <div class="text-xl font-bold text-purple-400" id="statWorkerPurges">0</div>
+        <div class="text-xs text-gray-400 mb-1">Active CPU Workers</div>
+        <div class="text-xl font-bold text-purple-400" id="statActiveCores">0 Workers</div>
       </div>
     </div>
 
     <!-- Controls & Progress -->
     <div id="actionControls" class="hidden flex flex-col gap-4">
       <div class="flex flex-wrap items-center justify-between gap-3 bg-gray-900 p-4 rounded-xl border border-gray-800">
-        <div class="flex items-center gap-3">
-          <button id="startBatchBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-emerald-900/20">
-            <i class="fa-solid fa-play"></i> Start Turbo Processing
+        <div class="flex flex-wrap items-center gap-3">
+          <button id="startBatchBtn" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-purple-900/20">
+            <i class="fa-solid fa-play"></i> <span id="startBtnLabel">Start Parallel Engine</span>
           </button>
-          <button id="clearAllBtn" class="bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-800/40 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+          
+          <button id="pauseBatchBtn" disabled class="bg-amber-600/30 hover:bg-amber-600/50 border border-amber-500/50 text-amber-300 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-pause"></i> Pause
+          </button>
+
+          <button id="stopBatchBtn" disabled class="bg-rose-950/50 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-stop"></i> Stop
+          </button>
+
+          <button id="retryFailedBtn" class="hidden bg-orange-600 hover:bg-orange-500 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i> Retry Failed (<span id="failedCount">0</span>)
+          </button>
+
+          <button id="clearAllBtn" class="bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
             <i class="fa-solid fa-trash"></i> Clear Queue
           </button>
         </div>
@@ -141,10 +165,10 @@
       <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
         <div class="flex justify-between text-xs text-gray-400 mb-2">
           <span id="currentStatusText">Ready...</span>
-          <span id="overallPercentage" class="font-mono text-blue-400">0%</span>
+          <span id="overallPercentage" class="font-mono text-purple-400">0%</span>
         </div>
         <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
-          <div id="mainProgressBar" class="bg-blue-600 h-full w-0 transition-all duration-300"></div>
+          <div id="mainProgressBar" class="bg-purple-600 h-full w-0 transition-all duration-300"></div>
         </div>
       </div>
     </div>
@@ -165,8 +189,8 @@
   <!-- Footer -->
   <footer class="bg-gray-900 border-t border-gray-800 py-4 px-6 text-center text-xs text-gray-400 mt-auto">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-      <div>Fast Local Client-Side PDF Engine — Direct Blob Stream Enabled</div>
-      <div class="font-semibold text-gray-300">Eng. Ahmed Bahgat</div>
+      <div>Parallel Multi-Core Engine — Direct Local Processing</div>
+      <div class="font-semibold text-gray-300">Eng. Ahmed Bahgat / م. أحمد بهجت</div>
     </div>
   </footer>
 
@@ -176,12 +200,13 @@
     const state = {
       files: [],
       isRunning: false,
+      isPaused: false,
+      isStopped: false,
       processedFilesCount: 0,
       totalPagesProcessed: 0,
-      pagesProcessedSincePurge: 0,
       startTime: null,
       autoDownload: true,
-      currentWorker: null
+      scheduler: null
     };
 
     const dropZone = document.getElementById('dropZone');
@@ -191,8 +216,14 @@
     const queueSection = document.getElementById('queueSection');
     const queueList = document.getElementById('queueList');
     const startBatchBtn = document.getElementById('startBatchBtn');
+    const startBtnLabel = document.getElementById('startBtnLabel');
+    const pauseBatchBtn = document.getElementById('pauseBatchBtn');
+    const stopBatchBtn = document.getElementById('stopBatchBtn');
+    const retryFailedBtn = document.getElementById('retryFailedBtn');
+    const failedCount = document.getElementById('failedCount');
     const clearAllBtn = document.getElementById('clearAllBtn');
     const autoDownloadToggle = document.getElementById('autoDownloadToggle');
+    const threadCountSelect = document.getElementById('threadCountSelect');
     const mainProgressBar = document.getElementById('mainProgressBar');
     const overallPercentage = document.getElementById('overallPercentage');
     const currentStatusText = document.getElementById('currentStatusText');
@@ -201,16 +232,16 @@
     const statTotalFiles = document.getElementById('statTotalFiles');
     const statProcessedPages = document.getElementById('statProcessedPages');
     const statPagesPerSec = document.getElementById('statPagesPerSec');
-    const statWorkerPurges = document.getElementById('statWorkerPurges');
+    const statActiveCores = document.getElementById('statActiveCores');
 
     autoDownloadToggle.addEventListener('change', (e) => state.autoDownload = e.target.checked);
 
     fileInput.addEventListener('change', (e) => handleFilesAdded(e.target.files));
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-blue-500'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-blue-500'));
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-purple-500'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-purple-500'));
     dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
-      dropZone.classList.remove('border-blue-500');
+      dropZone.classList.remove('border-purple-500');
       if (e.dataTransfer.files) handleFilesAdded(e.dataTransfer.files);
     });
 
@@ -246,6 +277,14 @@
       statProcessedFiles.textContent = state.processedFilesCount;
       statProcessedPages.textContent = state.totalPagesProcessed;
 
+      const failedItems = state.files.filter(f => f.status === 'error');
+      if (failedItems.length > 0 && !state.isRunning) {
+        retryFailedBtn.classList.remove('hidden');
+        failedCount.textContent = failedItems.length;
+      } else {
+        retryFailedBtn.classList.add('hidden');
+      }
+
       renderQueue();
     }
 
@@ -257,17 +296,21 @@
         
         let statusBadge = `<span class="text-xs text-gray-500 bg-gray-800 px-2.5 py-1 rounded-full border border-gray-700">Pending</span>`;
         if (item.status === 'processing') {
-          statusBadge = `<span class="text-xs text-blue-400 bg-blue-950/60 px-2.5 py-1 rounded-full border border-blue-800/50 flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin"></i> Processing (${item.progress}%)</span>`;
+          statusBadge = `<span class="text-xs text-purple-400 bg-purple-950/60 px-2.5 py-1 rounded-full border border-purple-800/50 flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin"></i> Processing (${item.progress}%)</span>`;
+        } else if (item.status === 'paused') {
+          statusBadge = `<span class="text-xs text-amber-400 bg-amber-950/60 px-2.5 py-1 rounded-full border border-amber-800/50">Paused</span>`;
         } else if (item.status === 'completed') {
           statusBadge = `<span class="text-xs text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-800/50 flex items-center gap-1.5"><i class="fa-solid fa-check"></i> Completed</span>`;
         } else if (item.status === 'error') {
           statusBadge = `<span class="text-xs text-red-400 bg-red-950/60 px-2.5 py-1 rounded-full border border-red-800/50">Error</span>`;
+        } else if (item.status === 'stopped') {
+          statusBadge = `<span class="text-xs text-rose-400 bg-rose-950/60 px-2.5 py-1 rounded-full border border-rose-800/50">Stopped</span>`;
         }
 
         let downloadAction = '';
         if (item.resultBlob) {
           downloadAction = `
-            <button onclick="downloadBlob('${item.id}')" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded border border-blue-500 transition-colors flex items-center gap-1 cursor-pointer">
+            <button onclick="downloadBlob('${item.id}')" class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded border border-purple-500 transition-colors flex items-center gap-1 cursor-pointer">
               <i class="fa-solid fa-download"></i> Save
             </button>
           `;
@@ -288,7 +331,6 @@
       });
     }
 
-    // Direct Blob Download Function (100% Reliable)
     window.downloadBlob = function(id) {
       const item = state.files.find(f => f.id === id);
       if (!item || !item.resultBlob) return;
@@ -303,47 +345,105 @@
       URL.revokeObjectURL(url);
     };
 
-    async function getFreshWorker() {
-      const lang = document.getElementById('ocrLang').value;
-      if (state.currentWorker) {
-        await state.currentWorker.terminate();
+    // Pause Control
+    pauseBatchBtn.addEventListener('click', () => {
+      if (!state.isRunning) return;
+      state.isPaused = !state.isPaused;
+      if (state.isPaused) {
+        pauseBatchBtn.innerHTML = `<i class="fa-solid fa-play"></i> Resume`;
+        currentStatusText.textContent = 'Engine Paused by User.';
+      } else {
+        pauseBatchBtn.innerHTML = `<i class="fa-solid fa-pause"></i> Pause`;
+        currentStatusText.textContent = 'Resuming Execution...';
       }
-      state.currentWorker = await Tesseract.createWorker(lang);
-      state.pagesProcessedSincePurge = 0;
-      statWorkerPurges.textContent = parseInt(statWorkerPurges.textContent) + 1;
-      return state.currentWorker;
+    });
+
+    // Stop Control
+    stopBatchBtn.addEventListener('click', async () => {
+      state.isStopped = true;
+      state.isRunning = false;
+      currentStatusText.textContent = 'Stopping Workers and Aborting Engine...';
+      if (state.scheduler) {
+        await state.scheduler.terminate();
+        state.scheduler = null;
+      }
+      state.files.forEach(f => { if (f.status === 'processing' || f.status === 'pending') f.status = 'stopped'; });
+      resetControls();
+      updateUI();
+      currentStatusText.textContent = 'Engine Stopped.';
+    });
+
+    // Retry Failed
+    retryFailedBtn.addEventListener('click', () => {
+      state.files.forEach(f => { if (f.status === 'error') f.status = 'pending'; });
+      updateUI();
+      startBatchBtn.click();
+    });
+
+    function resetControls() {
+      startBatchBtn.disabled = false;
+      pauseBatchBtn.disabled = true;
+      stopBatchBtn.disabled = true;
+      startBtnLabel.textContent = 'Start Parallel Engine';
+      pauseBatchBtn.innerHTML = `<i class="fa-solid fa-pause"></i> Pause`;
     }
 
+    // Parallel Engine Trigger
     startBatchBtn.addEventListener('click', async () => {
       if (state.isRunning) return;
       state.isRunning = true;
+      state.isPaused = false;
+      state.isStopped = false;
       state.startTime = Date.now();
-      startBatchBtn.disabled = true;
 
-      currentStatusText.textContent = 'Initializing Worker Engine...';
-      let worker = await getFreshWorker();
+      startBatchBtn.disabled = true;
+      pauseBatchBtn.disabled = false;
+      stopBatchBtn.disabled = false;
+
+      const userThreadVal = threadCountSelect.value;
+      const coreCount = userThreadVal === 'auto' ? Math.min(navigator.hardwareConcurrency || 4, 16) : parseInt(userThreadVal);
+      statActiveCores.textContent = `${coreCount} Cores`;
+
+      currentStatusText.textContent = `Spawning ${coreCount} Parallel Tesseract Workers...`;
+
+      const lang = document.getElementById('ocrLang').value;
+      state.scheduler = Tesseract.createScheduler();
+
+      for (let i = 0; i < coreCount; i++) {
+        const worker = await Tesseract.createWorker(lang);
+        state.scheduler.addWorker(worker);
+      }
+
+      currentStatusText.textContent = 'Processing tasks concurrently...';
       const renderDpi = parseFloat(document.getElementById('renderDpi').value);
 
       for (const item of state.files) {
+        if (state.isStopped) break;
+
+        while (state.isPaused) {
+          item.status = 'paused';
+          updateUI();
+          await new Promise(r => setTimeout(r, 300));
+          if (state.isStopped) break;
+        }
+
+        if (state.isStopped) break;
         if (item.status === 'completed') continue;
 
         item.status = 'processing';
         updateUI();
 
         try {
-          if (state.pagesProcessedSincePurge >= 30) {
-            currentStatusText.textContent = 'Rotating Worker Thread to clean memory...';
-            worker = await getFreshWorker();
-          }
+          const pdfBlob = await processFileParallel(item, state.scheduler, renderDpi);
+          if (state.isStopped) break;
 
-          const pdfBlob = await processFileToBlob(item, worker, renderDpi);
           item.resultBlob = pdfBlob;
           item.status = 'completed';
           item.progress = 100;
           state.processedFilesCount++;
 
           if (state.autoDownload) {
-            await new Promise(r => setTimeout(r, 250)); // small delay to ensure trigger
+            await new Promise(r => setTimeout(r, 200));
             window.downloadBlob(item.id);
           }
 
@@ -364,13 +464,20 @@
         updateUI();
       }
 
-      currentStatusText.textContent = 'All tasks completed successfully!';
-      startBatchBtn.disabled = false;
-      if (state.currentWorker) await state.currentWorker.terminate();
+      if (!state.isStopped) {
+        currentStatusText.textContent = 'All tasks completed successfully!';
+      }
+
+      if (state.scheduler) {
+        await state.scheduler.terminate();
+        state.scheduler = null;
+      }
+
       state.isRunning = false;
+      resetControls();
     });
 
-    async function processFileToBlob(item, worker, dpiScale) {
+    async function processFileParallel(item, scheduler, dpiScale) {
       const { PDFDocument, rgb } = PDFLib;
       const pdfDoc = await PDFDocument.create();
       const file = item.file;
@@ -415,12 +522,14 @@
         });
       }
 
+      const ocrPromises = pagesData.map(pageData => scheduler.addJob('recognize', pageData.dataUrl));
+      const ocrResults = await Promise.all(ocrPromises);
+
+      state.totalPagesProcessed += pagesData.length;
+
       for (let i = 0; i < pagesData.length; i++) {
         const pageData = pagesData[i];
-        
-        const ocrResult = await worker.recognize(pageData.dataUrl);
-        state.totalPagesProcessed++;
-        state.pagesProcessedSincePurge++;
+        const ocrResult = ocrResults[i];
 
         const imageBytes = await fetch(pageData.dataUrl).then(res => res.arrayBuffer());
         const embeddedImage = await pdfDoc.embedJpg(imageBytes);
@@ -452,9 +561,6 @@
             });
           });
         }
-
-        item.progress = Math.round(((i + 1) / pagesData.length) * 100);
-        updateUI();
       }
 
       const pdfBytes = await pdfDoc.save();
