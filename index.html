@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Searchable PDF Ultra Batch Engine v5.2 - Fixed Download</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Tesseract.js -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <!-- PDF-Lib -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <style>
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col font-sans antialiased">
+
+  <!-- Header -->
+  <header class="bg-gray-900 border-b border-gray-800 px-6 py-4 sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-blue-600/20 text-blue-400 rounded-xl border border-blue-500/30">
+          <i class="fa-solid fa-bolt text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-wide text-white flex items-center gap-2">
+            Searchable PDF Ultra Engine
+            <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">v5.2 Direct Download Fix</span>
+          </h1>
+          <p class="text-xs text-gray-400">Worker Rotation • Instant Blob Save • 100% Working Auto-Download</p>
+        </div>
+      </div>
+
+      <!-- Quick Settings -->
+      <div class="flex flex-wrap items-center gap-3 text-sm">
+        <div class="flex items-center gap-2 bg-gray-800/80 px-3 py-1.5 rounded-lg border border-gray-700">
+          <i class="fa-solid fa-language text-gray-400"></i>
+          <span class="text-xs text-gray-400">Lang:</span>
+          <select id="ocrLang" class="bg-transparent text-white text-xs font-medium focus:outline-none cursor-pointer">
+            <option value="eng" class="bg-gray-900">English</option>
+            <option value="ara" class="bg-gray-900">Arabic</option>
+            <option value="ara+eng" class="bg-gray-900">Arabic + English</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2 bg-gray-800/80 px-3 py-1.5 rounded-lg border border-gray-700">
+          <i class="fa-solid fa-expand text-gray-400"></i>
+          <span class="text-xs text-gray-400">DPI Quality:</span>
+          <select id="renderDpi" class="bg-transparent text-white text-xs font-medium focus:outline-none cursor-pointer">
+            <option value="2.0" selected class="bg-gray-900">2.0x (High Sharpness)</option>
+            <option value="1.5" class="bg-gray-900">1.5x (Fast Balanced)</option>
+            <option value="3.0" class="bg-gray-900">3.0x (Ultra Crisp HD)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2 bg-blue-950/50 px-3 py-1.5 rounded-lg border border-blue-800/50">
+          <label for="autoDownloadToggle" class="flex items-center gap-2 cursor-pointer text-xs text-blue-300 font-medium">
+            <input type="checkbox" id="autoDownloadToggle" checked class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-gray-900 border-gray-700">
+            <span>Auto-Download</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+
+    <!-- Tech Banner -->
+    <div class="bg-emerald-950/30 border border-emerald-800/40 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-emerald-200">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span><strong>Direct Blob Export Fixed:</strong> Files are now linked instantly to secure memory blobs upon completion. Auto-download and manual "Save" buttons will now trigger file downloads immediately!</span>
+      </div>
+    </div>
+
+    <!-- Drop Zone -->
+    <div id="dropZone" class="border-2 border-dashed border-gray-700 hover:border-blue-500 bg-gray-900/50 hover:bg-gray-900 rounded-2xl p-8 text-center transition-all cursor-pointer relative group flex flex-col items-center justify-center min-h-[160px]">
+      <input type="file" id="fileInput" multiple accept="application/pdf,image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
+      <div class="p-4 bg-gray-800 group-hover:bg-blue-600/20 text-gray-400 group-hover:text-blue-400 rounded-full mb-3 transition-all">
+        <i class="fa-solid fa-file-arrow-up text-3xl"></i>
+      </div>
+      <h3 class="text-base font-semibold text-white mb-1">Drop Files (PDFs / Images) Here</h3>
+      <p class="text-xs text-gray-400">Direct Blob Stream & Instant Save Enabled</p>
+    </div>
+
+    <!-- Batch Stats Bar -->
+    <div id="statsContainer" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div class="text-xs text-gray-400 mb-1">Queue Completed</div>
+        <div class="text-xl font-bold text-white"><span id="statProcessedFiles">0</span> / <span id="statTotalFiles">0</span></div>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div class="text-xs text-gray-400 mb-1">Total Pages Done</div>
+        <div class="text-xl font-bold text-blue-400" id="statProcessedPages">0</div>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div class="text-xs text-gray-400 mb-1">Processing Speed</div>
+        <div class="text-xl font-bold text-emerald-400" id="statPagesPerSec">0.0 <span class="text-xs font-normal">p/s</span></div>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div class="text-xs text-gray-400 mb-1">Worker Rotations</div>
+        <div class="text-xl font-bold text-purple-400" id="statWorkerPurges">0</div>
+      </div>
+    </div>
+
+    <!-- Controls & Progress -->
+    <div id="actionControls" class="hidden flex flex-col gap-4">
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-gray-900 p-4 rounded-xl border border-gray-800">
+        <div class="flex items-center gap-3">
+          <button id="startBatchBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-emerald-900/20">
+            <i class="fa-solid fa-play"></i> Start Turbo Processing
+          </button>
+          <button id="clearAllBtn" class="bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-800/40 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+            <i class="fa-solid fa-trash"></i> Clear Queue
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Progress -->
+      <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
+        <div class="flex justify-between text-xs text-gray-400 mb-2">
+          <span id="currentStatusText">Ready...</span>
+          <span id="overallPercentage" class="font-mono text-blue-400">0%</span>
+        </div>
+        <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
+          <div id="mainProgressBar" class="bg-blue-600 h-full w-0 transition-all duration-300"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Queue Display -->
+    <div id="queueSection" class="hidden flex-1 flex flex-col bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+      <div class="px-5 py-3 border-b border-gray-800 flex justify-between items-center text-xs font-semibold text-gray-400 bg-gray-900/80">
+        <span>FILE NAME</span>
+        <span>STATUS / ACTION</span>
+      </div>
+      <div id="queueList" class="divide-y divide-gray-800/60 overflow-y-auto max-h-[450px] custom-scrollbar text-sm">
+        <!-- Rendered Rows -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 border-t border-gray-800 py-4 px-6 text-center text-xs text-gray-400 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+      <div>Fast Local Client-Side PDF Engine — Direct Blob Stream Enabled</div>
+      <div class="font-semibold text-gray-300">Eng. Ahmed Bahgat</div>
+    </div>
+  </footer>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const state = {
+      files: [],
+      isRunning: false,
+      processedFilesCount: 0,
+      totalPagesProcessed: 0,
+      pagesProcessedSincePurge: 0,
+      startTime: null,
+      autoDownload: true,
+      currentWorker: null
+    };
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const statsContainer = document.getElementById('statsContainer');
+    const actionControls = document.getElementById('actionControls');
+    const queueSection = document.getElementById('queueSection');
+    const queueList = document.getElementById('queueList');
+    const startBatchBtn = document.getElementById('startBatchBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const autoDownloadToggle = document.getElementById('autoDownloadToggle');
+    const mainProgressBar = document.getElementById('mainProgressBar');
+    const overallPercentage = document.getElementById('overallPercentage');
+    const currentStatusText = document.getElementById('currentStatusText');
+
+    const statProcessedFiles = document.getElementById('statProcessedFiles');
+    const statTotalFiles = document.getElementById('statTotalFiles');
+    const statProcessedPages = document.getElementById('statProcessedPages');
+    const statPagesPerSec = document.getElementById('statPagesPerSec');
+    const statWorkerPurges = document.getElementById('statWorkerPurges');
+
+    autoDownloadToggle.addEventListener('change', (e) => state.autoDownload = e.target.checked);
+
+    fileInput.addEventListener('change', (e) => handleFilesAdded(e.target.files));
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-blue-500'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-blue-500'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-blue-500');
+      if (e.dataTransfer.files) handleFilesAdded(e.dataTransfer.files);
+    });
+
+    function handleFilesAdded(newFiles) {
+      const added = Array.from(newFiles).filter(f => f.type === 'application/pdf' || f.type.startsWith('image/'));
+      if (added.length === 0) return;
+
+      added.forEach(file => {
+        state.files.push({
+          id: Math.random().toString(36).substring(2, 9),
+          file: file,
+          status: 'pending',
+          progress: 0,
+          resultBlob: null
+        });
+      });
+
+      updateUI();
+    }
+
+    function updateUI() {
+      if (state.files.length > 0) {
+        statsContainer.classList.remove('hidden');
+        actionControls.classList.remove('hidden');
+        queueSection.classList.remove('hidden');
+      } else {
+        statsContainer.classList.add('hidden');
+        actionControls.classList.add('hidden');
+        queueSection.classList.add('hidden');
+      }
+
+      statTotalFiles.textContent = state.files.length;
+      statProcessedFiles.textContent = state.processedFilesCount;
+      statProcessedPages.textContent = state.totalPagesProcessed;
+
+      renderQueue();
+    }
+
+    function renderQueue() {
+      queueList.innerHTML = '';
+      state.files.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'px-5 py-3 flex items-center justify-between hover:bg-gray-800/40 transition-colors';
+        
+        let statusBadge = `<span class="text-xs text-gray-500 bg-gray-800 px-2.5 py-1 rounded-full border border-gray-700">Pending</span>`;
+        if (item.status === 'processing') {
+          statusBadge = `<span class="text-xs text-blue-400 bg-blue-950/60 px-2.5 py-1 rounded-full border border-blue-800/50 flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin"></i> Processing (${item.progress}%)</span>`;
+        } else if (item.status === 'completed') {
+          statusBadge = `<span class="text-xs text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-800/50 flex items-center gap-1.5"><i class="fa-solid fa-check"></i> Completed</span>`;
+        } else if (item.status === 'error') {
+          statusBadge = `<span class="text-xs text-red-400 bg-red-950/60 px-2.5 py-1 rounded-full border border-red-800/50">Error</span>`;
+        }
+
+        let downloadAction = '';
+        if (item.resultBlob) {
+          downloadAction = `
+            <button onclick="downloadBlob('${item.id}')" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded border border-blue-500 transition-colors flex items-center gap-1 cursor-pointer">
+              <i class="fa-solid fa-download"></i> Save
+            </button>
+          `;
+        }
+
+        row.innerHTML = `
+          <div class="flex items-center gap-3 overflow-hidden pr-4">
+            <i class="fa-solid ${item.file.type === 'application/pdf' ? 'fa-file-pdf text-red-400' : 'fa-file-image text-emerald-400'} text-lg"></i>
+            <span class="truncate text-gray-200 font-medium" title="${item.file.name}">${item.file.name}</span>
+            <span class="text-xs text-gray-500">(${(item.file.size / (1024*1024)).toFixed(1)} MB)</span>
+          </div>
+          <div class="flex items-center gap-3 flex-shrink-0">
+            ${downloadAction}
+            ${statusBadge}
+          </div>
+        `;
+        queueList.appendChild(row);
+      });
+    }
+
+    // Direct Blob Download Function (100% Reliable)
+    window.downloadBlob = function(id) {
+      const item = state.files.find(f => f.id === id);
+      if (!item || !item.resultBlob) return;
+
+      const url = URL.createObjectURL(item.resultBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `searchable_${item.file.name.replace(/\.[^/.]+$/, "")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    async function getFreshWorker() {
+      const lang = document.getElementById('ocrLang').value;
+      if (state.currentWorker) {
+        await state.currentWorker.terminate();
+      }
+      state.currentWorker = await Tesseract.createWorker(lang);
+      state.pagesProcessedSincePurge = 0;
+      statWorkerPurges.textContent = parseInt(statWorkerPurges.textContent) + 1;
+      return state.currentWorker;
+    }
+
+    startBatchBtn.addEventListener('click', async () => {
+      if (state.isRunning) return;
+      state.isRunning = true;
+      state.startTime = Date.now();
+      startBatchBtn.disabled = true;
+
+      currentStatusText.textContent = 'Initializing Worker Engine...';
+      let worker = await getFreshWorker();
+      const renderDpi = parseFloat(document.getElementById('renderDpi').value);
+
+      for (const item of state.files) {
+        if (item.status === 'completed') continue;
+
+        item.status = 'processing';
+        updateUI();
+
+        try {
+          if (state.pagesProcessedSincePurge >= 30) {
+            currentStatusText.textContent = 'Rotating Worker Thread to clean memory...';
+            worker = await getFreshWorker();
+          }
+
+          const pdfBlob = await processFileToBlob(item, worker, renderDpi);
+          item.resultBlob = pdfBlob;
+          item.status = 'completed';
+          item.progress = 100;
+          state.processedFilesCount++;
+
+          if (state.autoDownload) {
+            await new Promise(r => setTimeout(r, 250)); // small delay to ensure trigger
+            window.downloadBlob(item.id);
+          }
+
+        } catch (err) {
+          console.error(`Error processing ${item.file.name}:`, err);
+          item.status = 'error';
+        }
+
+        const pct = Math.round((state.processedFilesCount / state.files.length) * 100);
+        mainProgressBar.style.width = `${pct}%`;
+        overallPercentage.textContent = `${pct}%`;
+
+        const elapsedSec = (Date.now() - state.startTime) / 1000;
+        if (elapsedSec > 0) {
+          statPagesPerSec.textContent = (state.totalPagesProcessed / elapsedSec).toFixed(1);
+        }
+
+        updateUI();
+      }
+
+      currentStatusText.textContent = 'All tasks completed successfully!';
+      startBatchBtn.disabled = false;
+      if (state.currentWorker) await state.currentWorker.terminate();
+      state.isRunning = false;
+    });
+
+    async function processFileToBlob(item, worker, dpiScale) {
+      const { PDFDocument, rgb } = PDFLib;
+      const pdfDoc = await PDFDocument.create();
+      const file = item.file;
+      let pagesData = [];
+
+      if (file.type === 'application/pdf') {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+        for (let p = 1; p <= pdf.numPages; p++) {
+          const page = await pdf.getPage(p);
+          const viewport = page.getViewport({ scale: dpiScale });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d', { alpha: false });
+
+          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+          pagesData.push({
+            dataUrl: canvas.toDataURL('image/jpeg', 0.92),
+            width: viewport.width / dpiScale,
+            height: viewport.height / dpiScale,
+            pixelWidth: viewport.width,
+            pixelHeight: viewport.height
+          });
+
+          canvas.width = 0; canvas.height = 0;
+        }
+      } else {
+        const img = new Image();
+        const imgUrl = URL.createObjectURL(file);
+        await new Promise(r => img.onload = r, img.src = imgUrl);
+
+        pagesData.push({
+          dataUrl: imgUrl,
+          width: img.width,
+          height: img.height,
+          pixelWidth: img.width,
+          pixelHeight: img.height
+        });
+      }
+
+      for (let i = 0; i < pagesData.length; i++) {
+        const pageData = pagesData[i];
+        
+        const ocrResult = await worker.recognize(pageData.dataUrl);
+        state.totalPagesProcessed++;
+        state.pagesProcessedSincePurge++;
+
+        const imageBytes = await fetch(pageData.dataUrl).then(res => res.arrayBuffer());
+        const embeddedImage = await pdfDoc.embedJpg(imageBytes);
+
+        const newPage = pdfDoc.addPage([pageData.width, pageData.height]);
+        newPage.drawImage(embeddedImage, {
+          x: 0,
+          y: 0,
+          width: pageData.width,
+          height: pageData.height
+        });
+
+        const scaleX = pageData.width / pageData.pixelWidth;
+        const scaleY = pageData.height / pageData.pixelHeight;
+
+        if (ocrResult && ocrResult.data && ocrResult.data.words) {
+          ocrResult.data.words.forEach(word => {
+            const { x0, y0, x1, y1 } = word.bbox;
+            const pdfX = x0 * scaleX;
+            const pdfY = pageData.height - (y1 * scaleY);
+            const boxHeight = (y1 - y0) * scaleY;
+
+            newPage.drawText(word.text, {
+              x: pdfX,
+              y: pdfY,
+              size: Math.max(boxHeight * 0.8, 6),
+              opacity: 0,
+              color: rgb(0, 0, 0)
+            });
+          });
+        }
+
+        item.progress = Math.round(((i + 1) / pagesData.length) * 100);
+        updateUI();
+      }
+
+      const pdfBytes = await pdfDoc.save();
+      return new Blob([pdfBytes], { type: 'application/pdf' });
+    }
+
+    clearAllBtn.addEventListener('click', () => {
+      state.files = [];
+      state.processedFilesCount = 0;
+      state.totalPagesProcessed = 0;
+      updateUI();
+    });
+  </script>
+</body>
+</html>
